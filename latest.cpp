@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <thread>
 using namespace std;
 
 class Graph {
@@ -95,10 +97,11 @@ public:
     }
 
     // Dijkstra's Algorithm
-   void findShortestPath(char start, char end) const {
+  string findShortestPath(char start, char end) const {
     int* distances = new int[intersectionCount];
     bool* visited = new bool[intersectionCount];
     char* predecessors = new char[intersectionCount];
+    string path;
 
     for (int i = 0; i < intersectionCount; ++i) {
         distances[i] = 99999999; // Replacing INT_MAX
@@ -137,27 +140,24 @@ public:
     if (distances[endIndex] == 99999999) {
         cout << "No path exists from " << start << " to " << end << "." << endl;
     } else {
-        cout << "Shortest distance from " << start << " to " << end << ": " << distances[endIndex] << " mins" << endl;
-        
         // Backtrack to find the path
-        cout << "Path: ";
-        char path[intersectionCount];
+        char tempPath[intersectionCount];
         int pathLength = 0;
         for (char at = end; at != '\0'; at = predecessors[findIndex(at)]) {
-            path[pathLength++] = at;
+            tempPath[pathLength++] = at;
         }
 
         for (int i = pathLength - 1; i >= 0; --i) {
-            cout << path[i];
-            if (i > 0) cout << " -> ";
+            path += tempPath[i];
         }
-        cout << endl;
     }
 
     delete[] distances;
     delete[] visited;
     delete[] predecessors;
+    return path;
 }
+
 };
 
 class Vehicle {
@@ -254,7 +254,47 @@ void readCSVAndBuildGraph(const char* filename, Graph& graph) {
 
     file.close();
 }
+void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* str) {
+    cout << "\nReal-Time Vehicle Movement:\n";
 
+    // Initialize positions for all vehicles
+    int* positions = new int[vehicleCount]();
+    bool* completed = new bool[vehicleCount]();
+
+    // Loop until all vehicles have reached their destinations
+    int time = 0;
+    bool allCompleted = false;
+
+    while (!allCompleted) {
+        allCompleted = true;
+        cout << "-At " << time << "th second\n";
+
+        for (int i = 0; i < vehicleCount; ++i) {
+            if (!completed[i]) {
+                const string& path = str[i];
+
+                // Check if the vehicle has finished its path
+                if (positions[i] < path.length() - 1) {
+                    char current = path[positions[i]];
+                    char next = path[positions[i] + 1];
+                    cout << vehicles[i].getId() << " is on road " << current << next << "\n";
+                    positions[i]++;
+                    allCompleted = false; // At least one vehicle is still moving
+                } else {
+                    cout << vehicles[i].getId() << " has reached its destination.\n";
+                    completed[i] = true;
+                }
+            }
+        }
+
+        // Wait for 5 seconds before the next update
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        time += 5;
+    }
+
+    delete[] positions;
+    delete[] completed;
+}
 int main() {
     Graph roadMap;
     const char* roadFile = "C:\\Users\\HP\\Documents\\DS_PROJECT\\road_network.csv";
@@ -271,13 +311,16 @@ int main() {
         cout << "\nVehicles List:" << endl;
         printVehicles(vehicles, vehicleCount);
 
-        cout << "\nShortest Paths for Vehicles:" << endl;
+        // Generate shortest paths for all vehicles
+        string* str = new string[vehicleCount];
         for (int i = 0; i < vehicleCount; ++i) {
-            cout << "For Vehicle ID " << vehicles[i].getId() << ":" << endl;
-            roadMap.findShortestPath(vehicles[i].getStart(), vehicles[i].getEnd());
-            cout << endl;
+            str[i] = roadMap.findShortestPath(vehicles[i].getStart(), vehicles[i].getEnd());
         }
 
+        // Real-time movement simulation
+        realTimeMovement(vehicles, vehicleCount, str);
+
+        delete[] str;
         delete[] vehicles;
     }
 
