@@ -157,6 +157,19 @@ public:
     delete[] predecessors;
     return path;
 }
+int getTravelTime(char from, char to) const {
+    int fromIndex = findIndex(from);
+    if (fromIndex == -1) return 0;
+
+    Road* current = adjLists[fromIndex].head;
+    while (current) {
+        if (current->intersection == to) {
+            return current->length;
+        }
+        current = current->next;
+    }
+    return 0;
+}
 
 };
 
@@ -254,45 +267,74 @@ void readCSVAndBuildGraph(const char* filename, Graph& graph) {
 
     file.close();
 }
-void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* str) {
+void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* paths, Graph& graph) {
     cout << "\nReal-Time Vehicle Movement:\n";
 
-    // Initialize positions for all vehicles
-    int* positions = new int[vehicleCount]();
-    bool* completed = new bool[vehicleCount]();
+    int* currentPositions = new int[vehicleCount](); // Track current position in the path for each vehicle
+    int* travelTimes = new int[vehicleCount]();      // Remaining travel time for each vehicle
+    bool* completed = new bool[vehicleCount]();      // Check if a vehicle has finished its journey
 
-    // Loop until all vehicles have reached their destinations
-    int time = 0;
+    int timeElapsed = 0;
     bool allCompleted = false;
 
     while (!allCompleted) {
         allCompleted = true;
-        cout << "-At " << time << "th second\n";
 
+        // Update vehicles every second
         for (int i = 0; i < vehicleCount; ++i) {
             if (!completed[i]) {
-                const string& path = str[i];
+                const string& path = paths[i];
 
-                // Check if the vehicle has finished its path
-                if (positions[i] < path.length() - 1) {
-                    char current = path[positions[i]];
-                    char next = path[positions[i] + 1];
-                    cout << vehicles[i].getId() << " is on road " << current << next << "\n";
-                    positions[i]++;
-                    allCompleted = false; // At least one vehicle is still moving
-                } else {
-                    cout << vehicles[i].getId() << " has reached its destination.\n";
-                    completed[i] = true;
+                // If vehicle hasn't reached its destination
+                if (currentPositions[i] < path.length() - 1) {
+                    char from = path[currentPositions[i]];
+                    char to = path[currentPositions[i] + 1];
+
+                    // If starting a new segment, fetch travel time from graph
+                    if (travelTimes[i] == 0) {
+                        travelTimes[i] = graph.getTravelTime(from, to);
+                        currentPositions[i]++;
+                    }
+
+                    // Decrement travel time for the current segment
+                    if (travelTimes[i] > 0) {
+                        travelTimes[i]--;
+                        allCompleted = false; // At least one vehicle is still moving
+                    }
+
+                    // If this is the last segment and travelTime reaches 0, mark as completed
+                    if (currentPositions[i] == path.length() - 1 && travelTimes[i] == 0) {
+                        completed[i] = true;
+                    }
                 }
             }
         }
 
-        // Wait for 5 seconds before the next update
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        time += 5;
+        // Display output every 5th second
+        if (timeElapsed % 5 == 0) {
+            cout << "-At " << timeElapsed << "th second\n";
+            for (int i = 0; i < vehicleCount; ++i) {
+                if (!completed[i]) {
+                    const string& path = paths[i];
+                    if (currentPositions[i] < path.length()) {
+                        char from = path[currentPositions[i] - 1]; // Current position
+                        char to = path[currentPositions[i]];       // Next position
+                        cout << vehicles[i].getId() << " is on road " << from << to
+                             << " (remaining time: " << travelTimes[i] << " seconds)\n";
+                    }
+                } else {
+                    cout << vehicles[i].getId() << " has reached its destination.\n";
+                }
+            }
+        }
+
+        // Wait for 1 second before updating travel times
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        timeElapsed++;
     }
 
-    delete[] positions;
+    delete[] currentPositions;
+    delete[] travelTimes;
     delete[] completed;
 }
 int main() {
@@ -312,15 +354,16 @@ int main() {
         printVehicles(vehicles, vehicleCount);
 
         // Generate shortest paths for all vehicles
-        string* str = new string[vehicleCount];
+        string* paths = new string[vehicleCount];
         for (int i = 0; i < vehicleCount; ++i) {
-            str[i] = roadMap.findShortestPath(vehicles[i].getStart(), vehicles[i].getEnd());
+            paths[i] = roadMap.findShortestPath(vehicles[i].getStart(), vehicles[i].getEnd());
         }
 
         // Real-time movement simulation
-        realTimeMovement(vehicles, vehicleCount, str);
+        realTimeMovement(vehicles, vehicleCount, paths, roadMap);
 
-        delete[] str;
+        // Cleanup
+        delete[] paths;
         delete[] vehicles;
     }
 
