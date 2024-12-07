@@ -228,6 +228,7 @@ Vehicle* readVehicles(const char* filename, int& count) {
         }
 
         char vehicleId[20], startIntersection, endIntersection;
+        //the overrr
         sscanf(line, "%[^,],%c,%c", vehicleId, &startIntersection, &endIntersection);
         vehicles[count++] = Vehicle(vehicleId, startIntersection, endIntersection);
     }
@@ -270,9 +271,9 @@ void readCSVAndBuildGraph(const char* filename, Graph& graph) {
 void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* paths, Graph& graph) {
     cout << "\nReal-Time Vehicle Movement:\n";
 
-    int* currentPositions = new int[vehicleCount](); // Track current position in the path for each vehicle
-    int* travelTimes = new int[vehicleCount]();      // Remaining travel time for each vehicle
-    bool* completed = new bool[vehicleCount]();      // Check if a vehicle has finished its journey
+    int* currentPositions = new int[vehicleCount]();
+    int* travelTimes = new int[vehicleCount]();
+    bool* completed = new bool[vehicleCount]();
 
     int timeElapsed = 0;
     bool allCompleted = false;
@@ -280,56 +281,50 @@ void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* paths, 
     while (!allCompleted) {
         allCompleted = true;
 
-        // Update vehicles every second
         for (int i = 0; i < vehicleCount; ++i) {
             if (!completed[i]) {
                 const string& path = paths[i];
 
-                // If vehicle hasn't reached its destination
                 if (currentPositions[i] < path.length() - 1) {
                     char from = path[currentPositions[i]];
                     char to = path[currentPositions[i] + 1];
 
-                    // If starting a new segment, fetch travel time from graph
                     if (travelTimes[i] == 0) {
                         travelTimes[i] = graph.getTravelTime(from, to);
-                        currentPositions[i]++;
                     }
 
-                    // Decrement travel time for the current segment
                     if (travelTimes[i] > 0) {
                         travelTimes[i]--;
-                        allCompleted = false; // At least one vehicle is still moving
+                        allCompleted = false;
                     }
 
-                    // If this is the last segment and travelTime reaches 0, mark as completed
-                    if (currentPositions[i] == path.length() - 1 && travelTimes[i] == 0) {
-                        completed[i] = true;
+                    if (travelTimes[i] == 0 && currentPositions[i] < path.length() - 1) {
+                        currentPositions[i]++;
                     }
+                }
+
+                if (currentPositions[i] == path.length() - 1 && travelTimes[i] == 0) {
+                    completed[i] = true;
                 }
             }
         }
 
-        // Display output every 5th second
         if (timeElapsed % 5 == 0) {
             cout << "-At " << timeElapsed << "th second\n";
             for (int i = 0; i < vehicleCount; ++i) {
                 if (!completed[i]) {
                     const string& path = paths[i];
-                    if (currentPositions[i] < path.length()) {
-                        char from = path[currentPositions[i] - 1]; // Current position
-                        char to = path[currentPositions[i]];       // Next position
-                        cout << vehicles[i].getId() << " is on road " << from << to
-                             << " (remaining time: " << travelTimes[i] << " seconds)\n";
-                    }
+                    char from = path[currentPositions[i]];
+                    char to = path[currentPositions[i] + 1];
+                    cout << vehicles[i].getId() << " is on road " << from << to
+                         << " (remaining time: " << travelTimes[i] << " seconds)\n";
                 } else {
                     cout << vehicles[i].getId() << " has reached its destination.\n";
                 }
             }
         }
 
-        // Wait for 1 second before updating travel times
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        this_thread::sleep_for(chrono::seconds(1));
         timeElapsed++;
     }
 
@@ -337,6 +332,7 @@ void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* paths, 
     delete[] travelTimes;
     delete[] completed;
 }
+
 int main() {
     Graph roadMap;
     const char* roadFile = "C:\\Users\\HP\\Documents\\DS_PROJECT\\road_network.csv";
