@@ -228,6 +228,7 @@ Vehicle* readVehicles(const char* filename, int& count) {
         }
 
         char vehicleId[20], startIntersection, endIntersection;
+        //the overrr
         sscanf(line, "%[^,],%c,%c", vehicleId, &startIntersection, &endIntersection);
         vehicles[count++] = Vehicle(vehicleId, startIntersection, endIntersection);
     }
@@ -268,166 +269,283 @@ void readCSVAndBuildGraph(const char* filename, Graph& graph) {
     file.close();
 }
 
-class RoadMap {
-    struct RoadNode {
+class PriorityQueue {
+    struct Node {
         char from;
         char to;
-        int count;
-        RoadNode* next;
+        int vehicleCount;
+        Node* next;
     };
 
-    RoadNode* head;
+    Node* head;
 
 public:
-    RoadMap() : head(nullptr) {}
+    PriorityQueue() : head(nullptr) {}
 
-    ~RoadMap() {
+    ~PriorityQueue() {
         while (head) {
-            RoadNode* temp = head;
+            Node* temp = head;
             head = head->next;
             delete temp;
         }
     }
 
-    // Find a specific road
-    RoadNode* findRoad(char from, char to) {
-        RoadNode* current = head;
+    void enqueue(char from, char to, int count) {
+        Node* newNode = new Node{from, to, count, nullptr};
+        if (!head || head->vehicleCount < count) {
+            newNode->next = head;
+            head = newNode;
+        } else {
+            Node* current = head;
+            while (current->next && current->next->vehicleCount >= count) {
+                current = current->next;
+            }
+            newNode->next = current->next;
+            current->next = newNode;
+        }
+    }
+
+    Node* dequeue() {
+        if (!head) return nullptr;
+        Node* temp = head;
+        head = head->next;
+        return temp;
+    }
+
+    bool isEmpty() const {
+        return head == nullptr;
+    }
+
+    void displayQueue() const {
+        Node* current = head;
+        cout << "Priority Queue (Vehicle Count): ";
+        while (current) {
+            cout << "(" << current->from << current->to << ": " << current->vehicleCount << ") ";
+            current = current->next;
+        }
+        cout << endl;
+    }
+
+    // Checks if the road from 'from' to 'to' is in the queue
+    bool containsRoad(char from, char to) const {
+        Node* current = head;
         while (current) {
             if (current->from == from && current->to == to) {
-                return current;
+                return true;
             }
             current = current->next;
         }
-        return nullptr;
+        return false;
     }
 
-    // Add or increment a road's vehicle count
-    void addOrIncrementRoad(char from, char to) {
-        if (!isValidIntersection(from) || !isValidIntersection(to)) {
-            cout << "Invalid road (" << from << to << "). Skipping.\n";
+    // Removes the road from 'from' to 'to' from the queue
+    void removeRoad(char from, char to) {
+        if (!head) return;
+
+        if (head->from == from && head->to == to) {
+            Node* temp = head;
+            head = head->next;
+            delete temp;
             return;
         }
 
-        RoadNode* road = findRoad(from, to);
-        if (road) {
-            road->count++;
-        } else {
-            // Create a new road node
-            RoadNode* newRoad = new RoadNode{from, to, 1, head};
-            head = newRoad;
-        }
-    }
-
-    // Decrement a road's vehicle count
-    void decrementRoad(char from, char to) {
-        RoadNode* road = findRoad(from, to);
-        if (road) {
-            if (road->count > 0) {
-                road->count--;
-            } else {
-                cout << "Warning: Attempted to decrement road " << from << to 
-                     << " with zero vehicles. Skipping decrement.\n";
+        Node* current = head;
+        while (current->next) {
+            if (current->next->from == from && current->next->to == to) {
+                Node* temp = current->next;
+                current->next = current->next->next;
+                delete temp;
+                return;
             }
+            current = current->next;
         }
     }
+};
 
-    // Display all roads and vehicle counts
-    void displayRoads() {
+class RoadMap {
+public:
+    struct RoadNode {
+        char from;
+        char to;
+        int count;
+        RoadNode* next;
+
+        RoadNode(char f, char t, int c) : from(f), to(t), count(c), next(nullptr) {}
+    };
+
+private:
+    RoadNode* head;
+
+public:
+    RoadMap() : head(nullptr) {}
+
+    void addOrIncrementRoad(char from, char to) {
         RoadNode* current = head;
         while (current) {
-            if (isValidIntersection(current->from) && isValidIntersection(current->to)) {
-                cout << "Road " << current->from << current->to << ": " 
-                     << current->count << " vehicles\n";
-            } else {
-                cout << "Invalid Road Detected: Skipping display\n";
+            if (current->from == from && current->to == to) {
+                current->count++;
+                return;
+            }
+            current = current->next;
+        }
+
+        // Add new road node if not found
+        RoadNode* newNode = new RoadNode(from, to, 1);
+        newNode->next = head;
+        head = newNode;
+    }
+
+    void decrementRoad(char from, char to) {
+        RoadNode* current = head;
+        while (current) {
+            if (current->from == from && current->to == to) {
+                current->count = max(0, current->count - 1);  // Prevent negative values
+                return;
             }
             current = current->next;
         }
     }
 
-private:
-    // Helper to validate intersections
-    bool isValidIntersection(char intersection) {
-        // Check if the character is within a valid range (e.g., 'A' to 'Z')
-        return (intersection >= 'A' && intersection <= 'Z');
+    RoadNode* getHead() const {
+        return head;
+    }
+
+    ~RoadMap() {
+        RoadNode* current = head;
+        while (current) {
+            RoadNode* toDelete = current;
+            current = current->next;
+            delete toDelete;
+        }
     }
 };
 
+// Your existing Graph, Vehicle, PriorityQueue, and RoadMap classes remain the same
 
-void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* paths, Graph& graph) {
-    cout << "\nReal-Time Vehicle Movement:\n";
+class TrafficSignalManager {
+    PriorityQueue queue;
 
-    int* currentPositions = new int[vehicleCount](); // Track current position in the path for each vehicle
-    int* travelTimes = new int[vehicleCount]();      // Remaining travel time for each vehicle
-    bool* completed = new bool[vehicleCount]();      // Check if a vehicle has finished its journey
+public:
+    void addRoadToQueue(char from, char to, int vehicleCount) {
+        queue.enqueue(from, to, vehicleCount);
+    }
 
-    RoadMap roadUsage; // Custom RoadMap to track road usage
+    void manageSignals(int simulationTime, RoadMap& roadMap) {
+        cout << "--- Traffic Signal Management ---\n";
+        RoadMap::RoadNode* current = roadMap.getHead();
+        while (current) {
+            int greenTime = calculateGreenTime(current->count);
+            cout << "Road " << current->from << "->" << current->to
+                 << " | Vehicles: " << current->count
+                 << " | Green Signal: " << greenTime << " seconds.\n";
+
+            current = current->next;
+        }
+        cout << endl;
+    }
+
+    int calculateGreenTime(int vehicleCount) {
+    if (vehicleCount >= 3) {
+        return 45 + rand() % 6; // 45 to 50 seconds
+    } else if (vehicleCount == 2) {
+        return 30 + rand() % 6; // 30 to 35 seconds
+    } else if (vehicleCount == 1) {
+        return 15 + rand() % 11; // 15 to 25 seconds
+    }
+    return 15; // Default for no vehicles
+    }
+
+};
+
+void realTimeMovementWithSignals(Vehicle* vehicles, int vehicleCount, const string* paths, Graph& graph, TrafficSignalManager& signalManager) {
+    cout << "\nReal-Time Vehicle Movement with Traffic Signal Management:\n";
+
+    int* currentPositions = new int[vehicleCount]();
+    int* travelTimes = new int[vehicleCount]();
+    bool* completed = new bool[vehicleCount]();
+    RoadMap roadMap;
 
     int timeElapsed = 0;
     bool allCompleted = false;
 
+    // Initialize the roadMap by tracking the roads taken by vehicles
+    for (int i = 0; i < vehicleCount; ++i) {
+        const string& path = paths[i];
+        if (path.length() > 1) {
+            char from = path[0];
+            char to = path[1];
+            roadMap.addOrIncrementRoad(from, to);
+        }
+    }
+
+    // Main simulation loop
     while (!allCompleted) {
         allCompleted = true;
 
-        // Update vehicles every second
         for (int i = 0; i < vehicleCount; ++i) {
             if (!completed[i]) {
-                allCompleted = false; // At least one vehicle is still moving
-
                 const string& path = paths[i];
 
-                // If vehicle hasn't reached its destination
                 if (currentPositions[i] < path.length() - 1) {
                     char from = path[currentPositions[i]];
                     char to = path[currentPositions[i] + 1];
 
-                    // If starting a new segment, fetch travel time from graph
                     if (travelTimes[i] == 0) {
                         travelTimes[i] = graph.getTravelTime(from, to);
-                        currentPositions[i]++;
-
-                        // Increment the road usage counter
-                        roadUsage.addOrIncrementRoad(from, to);
                     }
 
-                    // Decrement travel time for the current segment
                     if (travelTimes[i] > 0) {
                         travelTimes[i]--;
+                        allCompleted = false;
                     }
 
-                    // Check if vehicle is on the road containing the destination
-                    if (to == vehicles[i].getEnd() && travelTimes[i] == 0) {
-                        completed[i] = true; // Mark as completed
-                        roadUsage.decrementRoad(from, to);
+                    if (travelTimes[i] == 0 && currentPositions[i] < path.length() - 1) {
+                        roadMap.decrementRoad(from, to);
+                        currentPositions[i]++;
+                        if (currentPositions[i] < path.length() - 1) {
+                            from = path[currentPositions[i]];
+                            to = path[currentPositions[i] + 1];
+                            roadMap.addOrIncrementRoad(from, to);
+                        }
                     }
+                }
+
+                if (currentPositions[i] == path.length() - 1 && travelTimes[i] == 0) {
+                    completed[i] = true;
                 }
             }
         }
 
-        // Display output every 5th second
+        // Print updates every 5 seconds
         if (timeElapsed % 5 == 0) {
-            cout << "-At " << timeElapsed << "th second\n";
+            cout << "\n--- Traffic Signal Management at " << timeElapsed << " seconds ---\n";
+
+            // Display road signal information
+            RoadMap::RoadNode* current = roadMap.getHead();
+            while (current) {
+                int greenTime = signalManager.calculateGreenTime(current->count);
+                cout << "Road " << current->from << "->" << current->to
+                     << " | Vehicles: " << current->count
+                     << " | Green Signal: " << greenTime << " seconds.\n";
+
+                current = current->next;
+            }
+
+            // Display vehicle states
+            cout << "\n\n\n";
             for (int i = 0; i < vehicleCount; ++i) {
                 if (!completed[i]) {
-                    const string& path = paths[i];
-                    if (currentPositions[i] < path.length()) {
-                        char from = path[currentPositions[i] - 1]; // Current position
-                        char to = path[currentPositions[i]];       // Next position
-                        cout << vehicles[i].getId() << " is on road " << from << to
-                             << " (remaining time: " << travelTimes[i] << " seconds)\n";
-                    }
+                    char from = paths[i][currentPositions[i]];
+                    char to = paths[i][currentPositions[i] + 1];
+                    cout << "Vehicle " << vehicles[i].getId() << " on road " << from << "->" << to
+                         << " | Time left: " << travelTimes[i] << " seconds.\n";
                 } else {
-                    cout << vehicles[i].getId() << " has reached its destination.\n";
+                    cout << "Vehicle " << vehicles[i].getId() << " has reached its destination.\n";
                 }
             }
-
-            // Display current road usage
-            cout << "\nCurrent Road Usage:\n";
-            roadUsage.displayRoads();
         }
 
-        // Wait for 1 second before updating travel times
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        this_thread::sleep_for(chrono::seconds(1));
         timeElapsed++;
     }
 
@@ -437,6 +555,9 @@ void realTimeMovement(Vehicle* vehicles, int vehicleCount, const string* paths, 
 }
 
 
+
+
+// Your main function remains unchanged except for function calls as needed
 int main() {
     Graph roadMap;
     const char* roadFile = "road_network.csv";
@@ -453,16 +574,14 @@ int main() {
         cout << "\nVehicles List:" << endl;
         printVehicles(vehicles, vehicleCount);
 
-        // Generate shortest paths for all vehicles
         string* paths = new string[vehicleCount];
         for (int i = 0; i < vehicleCount; ++i) {
             paths[i] = roadMap.findShortestPath(vehicles[i].getStart(), vehicles[i].getEnd());
         }
 
-        // Real-time movement simulation
-        realTimeMovement(vehicles, vehicleCount, paths, roadMap);
+        TrafficSignalManager signalManager;
+        realTimeMovementWithSignals(vehicles, vehicleCount, paths, roadMap, signalManager);
 
-        // Cleanup
         delete[] paths;
         delete[] vehicles;
     }
