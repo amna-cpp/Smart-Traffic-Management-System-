@@ -53,9 +53,10 @@ This simulation is particularly useful for urban traffic management systems, roa
 4-view results
 
 Observe the console output for real-time updates on:
--Vehicle movements.
--Road traffic density.
--Traffic signal timings at intersections.
+
+-Vehicle movements
+-Road traffic density
+-Traffic signal timings at intersections
 
 
 # 4. Future Enhancements
