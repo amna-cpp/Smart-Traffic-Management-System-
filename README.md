@@ -6,12 +6,12 @@ The Traffic Simulation System is a comprehensive program designed to simulate re
 This simulation is particularly useful for urban traffic management systems, road design analysis, and understanding the impact of dynamic traffic signal systems.
 
 # 2. Key Features
-# 1- Graph-Based Road Network Representation
+1- Graph-Based Road Network Representation
 
 -Represents roads as directed edges and intersections as nodes.
 -Roads have associated travel times for precise simulation.
 
-# 2- Shortest Path Calculation (Dijkstra’s Algorithm)
+2- Shortest Path Calculation (Dijkstra’s Algorithm)
 
 -Computes the shortest path for vehicles between intersections based on travel time.
 
@@ -40,3 +40,27 @@ This simulation is particularly useful for urban traffic management systems, roa
 8- Extensible and Modular Design
 
 -Easily adaptable for additional features like multi-directional traffic, real-world data integration, and visualization tools.
+
+
+# 3. Running the Simulation
+
+1- compile the program
+
+2- prepare input files
+
+3- run the program
+
+4-view results
+
+Observe the console output for real-time updates on:
+-Vehicle movements.
+-Road traffic density.
+-Traffic signal timings at intersections.
+
+
+# 4. Future Enhancements
+
+Congestion Monitoring
+Emergency Vehicle Handling
+Accident and Road Closure Simulation
+Simulation Dashboard
