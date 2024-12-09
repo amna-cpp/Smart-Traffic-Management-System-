@@ -83,20 +83,42 @@ When running the simulation, you will be presented with a menu that offers sever
      - Traffic signal status (GREEN or RED).
      - Remaining green and red times.
 
+ ### **Algorithms Used**
+
+#### **A* Search Algorithm**  
+The **A* search algorithm** is employed for emergency vehicles in this simulation. It is an advanced version of Dijkstra's algorithm, which not only considers the shortest path but also incorporates heuristics (estimates) to guide the search process efficiently. The A* algorithm is particularly useful for emergency vehicles because it accounts for:
+
+- **Shortest Path**: It finds the fastest route from the starting intersection to the destination, minimizing travel time.
+- **Congestion Awareness**: It considers real-time congestion (vehicle count) on each road, which helps in avoiding overcrowded routes.
+- **Travel Time Optimization**: In addition to distance, A* incorporates travel time on roads, ensuring that emergency vehicles take the most optimal route during critical moments.
+
+By using A* for emergency vehicles, the simulation ensures that they receive priority and can navigate the road network as quickly as possible, even in congested conditions.
+
+#### **Dijkstra's Algorithm**  
+For regular vehicles, **Dijkstra's algorithm** is used to determine the shortest path through the road network. It is highly effective in graphs where edge weights (travel times) vary, and it efficiently handles the following:
+
+- **Shortest Path Calculation**: Dijkstra’s algorithm calculates the shortest path between intersections based solely on road travel times.
+- **Graph-Based Search**: It uses a **priority queue** to prioritize roads based on the minimum accumulated travel time, ensuring vehicles take the most efficient route available.
+- **Dynamic Updates**: As the road network changes, Dijkstra continuously finds the best path for vehicles, considering updated travel times due to congestion or changes in traffic signals.
+
+By utilizing Dijkstra's algorithm, the system ensures that regular vehicles are routed in the most efficient manner, minimizing delays and optimizing traffic flow across the network. 
+
+Both algorithms are integral to the smooth operation of the traffic simulation, helping to manage emergency vehicle priority while optimizing travel for regular vehicles.
+
 ---
 
 ### **Code Architecture**  
-### **Classes and Structures**  
-1. **`RoadMap` Class**:  
-   - Core class managing roads and intersections using graphs and hash tables.  
-   - Synchronizes road congestion data with intersection states.  
+### **Classes and Their Functions**
 
-2. **`RoadNode` Structure**:  
-   - Represents a road between two intersections, holding vehicle count and next road node reference.  
+- **Graph Class**: Represents the road network as a graph, with intersections and roads. It includes functions to add roads, find shortest paths, and manage vehicle movement across intersections.
 
-3. **`IntersectionNode` Structure**:  
-   - Represents an intersection, including the number of vehicles waiting, signal state, and signal timing.  
+- **RoadMap Class**: Manages the road network and intersection signals. Functions include adding roads, managing vehicle counts, updating intersection signals, calculating green/red times, and handling emergency vehicle signal overrides.
 
+- **Vehicle Class**: Represents vehicles in the simulation. It stores vehicle properties such as type (emergency/regular), current location, destination, and priority. It handles routing based on vehicle type.
+
+- **realTimeMovement Function**: Simulates the movement of vehicles in real-time. It updates the positions of vehicles, adjusts their routes based on congestion and signal states, and handles emergency vehicle prioritization.
+
+- **Main**: The entry point of the simulation. It initializes the simulation, sets up the road network, processes user inputs through the menu, and runs the main simulation loop (e.g., updating vehicle movements and traffic signals).
 ---
 
 ### **Example Usage**  
@@ -123,6 +145,12 @@ Depending on the selected option, the user can interact with the simulation and 
 ## **Conclusion**  
 The **Traffic Simulation System** is a robust tool for modeling and managing traffic flow in a dynamic environment. By leveraging **graphs**, **hash tables**, and **priority queues**, the system efficiently handles vehicle management, congestion control, and adaptive signal management.
 
---- 
+**Future Enhancements**
+Accident and road closure simulations.
+Real-time data input from external systems.
+Enhanced visualization with graphical output.
+**Contributors**
+Amna Hameed: Lead developer for signal management and dynamic updates , traffic signals and emergency vehicle updates 
+Faryal Siddique: Designed emergency handling and adaptive timing logic.
+Khadija Sohail: Initial making of road networks , vehicles management shortest path algorithms 
 
-Let me know if you need further modifications or additional details!
