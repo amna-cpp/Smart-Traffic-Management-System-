@@ -145,13 +145,13 @@ Depending on the selected option, the user can interact with the simulation and 
 ## **Conclusion**  
 The **Traffic Simulation System** is a robust tool for modeling and managing traffic flow in a dynamic environment. By leveraging **graphs**, **hash tables**, and **priority queues**, the system efficiently handles vehicle management, congestion control, and adaptive signal management.
 
-#**Future Enhancements**
+##**Future Enhancements**
 Accident and road closure simulations.
 Real-time data input from external systems.
 Enhanced visualization with graphical output.
 
 ---
-#**Contributors**
+##**Contributors**
 Amna Hameed: Lead developer for signal management and dynamic updates , traffic signals and emergency vehicle updates 
 Faryal Siddique: Designed emergency handling and adaptive timing logic.
 Khadija Sohail: Initial making of road networks , vehicles management shortest path algorithms 
