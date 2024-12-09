@@ -1,7 +1,3 @@
-Here's the updated **README** with the added menu options and a creative simulation loop name:
-
----
-
 # **Traffic Simulation System**  
 **Developed by:**  
 - Amna Hameed  
