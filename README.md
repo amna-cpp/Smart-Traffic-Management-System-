@@ -1,70 +1,132 @@
-# Smart-Traffic-Management-System-
+Here's the updated **README** with the added menu options and a creative simulation loop name:
 
-# 1. Introduction
-The Traffic Simulation System is a comprehensive program designed to simulate real-time vehicle movement through a road network while managing traffic signals dynamically. The project uses a graph-based representation of road networks to map intersections and roads, allowing vehicles to traverse the network along the shortest path. Traffic signals are dynamically adjusted based on vehicle density, ensuring efficient traffic flow and minimizing congestion.
+---
 
-This simulation is particularly useful for urban traffic management systems, road design analysis, and understanding the impact of dynamic traffic signal systems.
+# **Traffic Simulation System**  
+**Developed by:**  
+- Amna Hameed  
+- Faryal Siddique  
+- Khadija Sohail  
 
-# 2. Key Features
-1- Graph-Based Road Network Representation
+---
 
--Represents roads as directed edges and intersections as nodes.
--Roads have associated travel times for precise simulation.
+## **Overview**  
+This project simulates a dynamic traffic management system that leverages advanced data structures to model roads, intersections, and vehicle movement. The system ensures efficient traffic flow by dynamically updating road congestion, prioritizing vehicles, and managing adaptive traffic signals.
 
-2- Shortest Path Calculation (Dijkstra’s Algorithm)
+---
 
--Computes the shortest path for vehicles between intersections based on travel time.
+## **Features**  
+### **1. Vehicle Management**  
+- **Dynamic Vehicle Updates**:  
+  Tracks vehicles entering and exiting roads and intersections, updating counts in real time.  
 
-3- Real-Time Vehicle Movement Simulation
+- **Emergency Vehicle Prioritization**:  
+  Emergency vehicles override signals and extend green durations to ensure unimpeded movement.  
 
--Tracks vehicles as they traverse roads and dynamically updates their positions over time.
+### **2. Traffic Signal Management**  
+- **Adaptive Signal Timings**:  
+  Green and red signal durations are calculated based on real-time vehicle counts.  
 
-4- Dynamic Traffic Signal Management
+- **Emergency Signal Overrides**:  
+  Priority is given to emergency vehicles by dynamically changing signals to green.  
 
--Adjusts traffic signal timings based on the number of vehicles waiting at each intersection.
--Uses intelligent algorithms to calculate green signal duration based on vehicle density.
+### **3. Road and Intersection Network**  
+- **Graph Representation**:  
+  The road network is modeled as a directed graph with:  
+  - **Nodes**: Represent intersections.  
+  - **Edges**: Represent roads, weighted by congestion levels (vehicle count).  
 
-5- File-Based Input and Initialization
+- **Real-Time Congestion Updates**:  
+  Vehicle movements dynamically adjust road weights to reflect congestion.  
 
--Reads road network data from a CSV file (road_network.csv).
--Reads vehicle data, including start and end points, from a CSV file (vehicles.csv).
+- **Priority-Based Road Selection**:  
+  Roads and signals are prioritized using a **priority queue**, ensuring optimal vehicle routing and management.  
 
-6- Priority Queue for Road Management
+---
 
--Prioritizes roads with higher vehicle density for signal management.
+## **Data Structures Used**  
+1. **Graphs**:  
+   - Represent the road network with intersections as nodes and roads as edges.  
+   - Enable efficient traversal and updates for routing and congestion tracking.  
 
-7- Visualization of Traffic and Signals
+2. **Hash Tables**:  
+   - Used in the `RoadMap` class to quickly look up road and intersection data.  
+   - Tracks vehicle counts to determine real-time congestion levels.  
 
--Displays road usage statistics, vehicle states, and intersection signal timings in real-time.
+3. **Priority Queue**:  
+   - Used to prioritize road selection and traffic signal management.  
+   - Ensures emergency vehicles and critical intersections are handled with higher priority.  
 
-8- Extensible and Modular Design
+---
 
--Easily adaptable for additional features like multi-directional traffic, real-world data integration, and visualization tools.
+## **How to Use**  
+### **Simulation Menu**  
+When running the simulation, you will be presented with a menu that offers several options for managing the simulation. Here’s a list of available options:
 
+1. **Add or Remove Vehicles**:  
+   - Add vehicles to specific roads or intersections using a simple input prompt.  
+   - Remove vehicles to simulate congestion reduction or vehicle exit from the system.
 
-# 3. Running the Simulation
+2. **Start the "Traffic Frenzy" Simulation Loop**:  
+   - Begin the main simulation loop, dubbed **"Traffic Frenzy"**. This loop dynamically manages vehicle movement, congestion updates, and traffic signal changes.  
+   - The loop will run continuously, updating road conditions, vehicle counts, and intersection signal statuses until stopped manually.
 
-1- compile the program
+3. **Display Main Road Network**:  
+   - View the road network with all intersections and their respective connections, showing which roads are currently congested based on vehicle counts.
 
-2- prepare input files
+4. **Show Vehicle Destinations**:  
+   - Display the current destination of each vehicle in the system. This provides a snapshot of where vehicles are headed, helping with route optimizations and future planning.
 
-3- run the program
+5. **Monitor System Performance**:  
+   - Check real-time performance statistics, such as road congestion levels, signal cycle times, and emergency vehicle movement efficiency.  
+   - This helps track the overall effectiveness of the traffic management system and its adaptability to different conditions.
 
-4-view results
+6. **Display Intersection Signals**:  
+   - View the current state of all intersections, including:
+     - Vehicle count.
+     - Traffic signal status (GREEN or RED).
+     - Remaining green and red times.
 
-Observe the console output for real-time updates on:
+---
 
--Vehicle movements
+### **Code Architecture**  
+### **Classes and Structures**  
+1. **`RoadMap` Class**:  
+   - Core class managing roads and intersections using graphs and hash tables.  
+   - Synchronizes road congestion data with intersection states.  
 
--Road traffic density
+2. **`RoadNode` Structure**:  
+   - Represents a road between two intersections, holding vehicle count and next road node reference.  
 
--Traffic signal timings at intersections
+3. **`IntersectionNode` Structure**:  
+   - Represents an intersection, including the number of vehicles waiting, signal state, and signal timing.  
 
+---
 
+### **Example Usage**  
+Below is an example flow of how the simulation might look when interacting with the menu:
 
-# 4. Future Enhancements
+```text
+Welcome to the Traffic Simulation System!
+------------------------------------------
+1. Add or Remove Vehicles
+2. Start "Traffic Frenzy" Simulation
+3. Display Main Road Network
+4. Show Vehicle Destinations
+5. Monitor System Performance
+6. Display Intersection Signals
+------------------------------------------
 
-Congestion Monitoring
-Emergency Vehicle Handling
-Accident and Road Closure Simulation
-Simulation Dashboard
+Choose an option (1-6):
+```
+
+Depending on the selected option, the user can interact with the simulation and view real-time traffic data and system status.  
+
+---
+
+## **Conclusion**  
+The **Traffic Simulation System** is a robust tool for modeling and managing traffic flow in a dynamic environment. By leveraging **graphs**, **hash tables**, and **priority queues**, the system efficiently handles vehicle management, congestion control, and adaptive signal management.
+
+--- 
+
+Let me know if you need further modifications or additional details!
